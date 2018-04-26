@@ -1,6 +1,7 @@
+# -*- coding:utf-8 -*-
 import numpy as np
 import pickle as pickle
-import tensorflow as tf
+#import tensorflow as tf
 import matplotlib.pyplot as plt
 import math
 import gym
@@ -10,10 +11,10 @@ random_episodes = 0
 reward_sum = 0
 
 """ OBSERVATION """
-TAM_INTERVALO_ITENS_OBS = 50
+TAM_INTERVALO_ITENS_OBS = 10
 POS_CART = 2.4
 VEL_CART = 2.5
-ANG_PEND = .25
+ANG_PEND = 15
 VEL_PEND = 2.5
 # QT_STATES = TAM_INTERVALO_ITENS_OBS^QT_ITENS(4)
 #Box com 4 posições
@@ -42,11 +43,13 @@ box[3] = np.linspace(-VEL_PEND,VEL_PEND, TAM_INTERVALO_ITENS_OBS)
 #print(box[3])
 """ FIM OBSERVATION """
 
+print(box)
 """ ACTIONS """
-
 # Discreto
 # valor 0 --> empurra carrinho pra esquerda
+ESQUERDA = 0
 # valor 1 --> empurra carrinho pra direita
+DIREITA = 1
 
 """ FIM ACTIONS """
 
@@ -54,7 +57,7 @@ box[3] = np.linspace(-VEL_PEND,VEL_PEND, TAM_INTERVALO_ITENS_OBS)
 
 # Recompensa é 1 para cada passo dado, incluindo o passo de terminação
 # """ FIM REWARD """
-
+REWARD = 1 
 """ ESTADO INICIAL """
 
 # Todas as observations sao atribuidas a um valor aleatorio uniforme entre +- 0.05
