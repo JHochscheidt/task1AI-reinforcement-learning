@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+
 import numpy as np
 import pickle as pickle
 #import tensorflow as tf
@@ -7,48 +8,47 @@ import math
 import gym
 env = gym.make('CartPole-v0')
 env.reset()
+
 random_episodes = 0
 reward_sum = 0
 
 """ OBSERVATION """
 POS_CART = 2.4
 VEL_CART = 2.5
-ANG_PEND = 2   #valor em radianos
+ANG_PEND = 2  # valor em radianos
 VEL_PEND = 2.5
 
 TAM_INTERVALO_OBJS = 10
-TAM_INTERVALO_VEL  = 10
+TAM_INTERVALO_VEL = 10
 
-numeroDevariaveis = env.observation_space.shape[0] #shape de 0 contem o array observation q possui todas as variaveis do problema
+# shape de 0 contem o array observation q possui todas as variaveis do problema
+NUM_VAR = env.observation_space.shape[0]
 
-# QT_STATES = TAM_INTERVALO_ITENS_OBS^QT_ITENS(4)
-#Box com 4 posições
-box = np.zeros((4,numeroDevariaveis))
-#print(Box)
+
 
 # pos 0 --> posição do carrinho [-2.4, 2.4]
 #box[0] = np.linspace(-POS_CART, POS_CART, TAM_INTERVALO_OBJS)
-#print(box[0])
+# print(box[0])
 
 # pos 1 --> velocidade do carrinho (-inf, inf)
 """     Percebeu-se observando a execucao do arquivo original que a velocidade do cart varia entre -2 e 2.
         Por isso da definicao desse intervalo de valores para velocidade """
 #box[1] = np.linspace(-VEL_CART,VEL_CART, TAM_INTERVALO_VEL)
-#print(box[1])
+# print(box[1])
 
-#pos 2 --> ângulo pêndulo [~-41.8, ^41.8]
+# pos 2 --> ângulo pêndulo [~-41.8, ^41.8]
 """     Como no link explicando o problema, citava que um episodio terminava quando o angulo passava de 12º do centro,
         decidiu-se entao, demilitar o intervalo de valores para o angulo de -15º a 15º """
 #box[2] = np.linspace(-ANG_PEND, ANG_PEND, TAM_INTERVALO_OBJS)
-#print(box[2])
-#pos 3 --> velocidade pêndulo (-inf, inf)
+# print(box[2])
+# pos 3 --> velocidade pêndulo (-inf, inf)
 """     Definição do intervalo segue a mesma ideia da velocidade do cart
         Porém, intervalo ai de -5 a 5"""
 #box[3] = np.linspace(-VEL_PEND,VEL_PEND, TAM_INTERVALO_VEL)
-#print(box[3])
+# print(box[3])
 """ FIM OBSERVATION """
 
-#print(box)
+# print(box)
 """ ACTIONS """
 actions = range(env.action_space.n)
 """ FIM ACTIONS """
@@ -57,7 +57,7 @@ actions = range(env.action_space.n)
 """ REWARD """
 # Recompensa é 1 para cada passo dado, incluindo o passo de terminação
 # """ FIM REWARD """
-REWARD = 1 
+REWARD = 1
 
 """ ESTADO INICIAL """
 
@@ -86,54 +86,57 @@ REWARD = 1
 # print(state)
 
 
-
-
-#inicia Qtable com valores todos zerados.
+# inicia Qtable com valores todos zerados.
 # funcao é chamada apenas na primeira vez que rodar o problema
-def init_qtable(): 
-    arq_Qtable = open('qtable.txt','w')
-    for i in range(10**4):
-        arq_Qtable.write("0.0,0.0,0.0,0.0;0,0\n")
+def init_qtable():
+    try:
+        arq_qtable = open('qtable.txt', 'r') #print 'tentou abrir arq'
+        return arq_qtable
+    except:
+        arq_qtable = open('qtable.txt', 'w') #print 'arq nao existe. vai cria-lo'
+        for i in range(10**4):
+            arq_qtable.writelines('0.0,0.0,0.0,0.0,0.0,0.0' + '\n')
+        return arq_qtable
 
 
-#salva Qtable atual em um arquivo
+# salva Qtable atual em um arquivo
 # para posteriormente continuar o treinamento "de onde parou"
 def save_qtable():
-    Qtable = open('qtable.txt', 'w')
+    ar_qtable = open('qtable.txt', 'w')
     
-    qt_linhas = Qtable.shape[0]
 
 
+# le QTABLE de arquivo e retorna matriz OBSERVATION e matriz ACTION
 def read_qtable():
     arq_qtable = open('qtable.txt')
-    qtable = np.array([l.split(';') for l in arq_qtable.readlines()])
     
-    qt_l,qt_c = qtable.shape
+    #splita o arquivo, pegando todos os valores e jogando na matriz
+    #depois tem que tratar os dados, observation action
+    qtable = np.array([d.split(',') for d in arq_qtable.readlines()], dtype=float) 
     
-    observation = np.array([qtable[:,0]]) # ta pegando o observation do arquivo 
-    action = np.array([qtable[:,1]]) # pegando acoes do arquivo
-
-    print(observation)
-
-    #splitar observation 
+    observation = qtable[:,:4]
+    action = qtable[:,4:]
+    print action
 
 
+
+arq_qtable = init_qtable()
+
+read_qtable()
+
+
+
+
+
+
+
+#if __name__ == "__main__":
     
-    return qtable
+    
+   # arq_qtable = init_qtable() # inicia a tabela em um arquivo
 
 
-
-
-arq_Qtable = init_qtable()
-qtable = read_qtable()
-
-#data=np.array([d.split(',') for d in fdata.readlines()],dtype=float)
-
-#print(qtable.shape[0])
-#print(qtable.shape[1])
-
-#print(qtable[0])
-
+    #observation, action = read_qtable() #le a tabela zerada do arquivo
 
 
 """
