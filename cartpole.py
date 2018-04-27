@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+#!/usr/local/bin/python
 
 import numpy as np
 import pickle as pickle
@@ -6,8 +7,9 @@ import pickle as pickle
 import matplotlib.pyplot as plt
 import math
 import gym
+
 env = gym.make('CartPole-v0')
-env.reset()
+#env.reset()
 
 random_episodes = 0
 reward_sum = 0
@@ -25,28 +27,8 @@ TAM_INTERVALO_VEL = 10
 NUM_VAR = env.observation_space.shape[0]
 
 
+qtable = { }
 
-# pos 0 --> posição do carrinho [-2.4, 2.4]
-#box[0] = np.linspace(-POS_CART, POS_CART, TAM_INTERVALO_OBJS)
-# print(box[0])
-
-# pos 1 --> velocidade do carrinho (-inf, inf)
-"""     Percebeu-se observando a execucao do arquivo original que a velocidade do cart varia entre -2 e 2.
-        Por isso da definicao desse intervalo de valores para velocidade """
-#box[1] = np.linspace(-VEL_CART,VEL_CART, TAM_INTERVALO_VEL)
-# print(box[1])
-
-# pos 2 --> ângulo pêndulo [~-41.8, ^41.8]
-"""     Como no link explicando o problema, citava que um episodio terminava quando o angulo passava de 12º do centro,
-        decidiu-se entao, demilitar o intervalo de valores para o angulo de -15º a 15º """
-#box[2] = np.linspace(-ANG_PEND, ANG_PEND, TAM_INTERVALO_OBJS)
-# print(box[2])
-# pos 3 --> velocidade pêndulo (-inf, inf)
-"""     Definição do intervalo segue a mesma ideia da velocidade do cart
-        Porém, intervalo ai de -5 a 5"""
-#box[3] = np.linspace(-VEL_PEND,VEL_PEND, TAM_INTERVALO_VEL)
-# print(box[3])
-""" FIM OBSERVATION """
 
 # print(box)
 """ ACTIONS """
@@ -90,42 +72,42 @@ REWARD = 1
 # funcao é chamada apenas na primeira vez que rodar o problema
 def init_qtable():
     try:
-        arq_qtable = open('qtable.txt', 'r') #print 'tentou abrir arq'
-        return arq_qtable
+        f_qtable = open('qtable.txt', 'r') #print 'tentou abrir arq'
+        return f_qtable
     except:
-        arq_qtable = open('qtable.txt', 'w') #print 'arq nao existe. vai cria-lo'
+        f_qtable = open('qtable.txt', 'w') #print 'arq nao existe. vai cria-lo'
         for i in range(10**4):
-            arq_qtable.writelines('0.0,0.0,0.0,0.0,0.0,0.0' + '\n')
-        return arq_qtable
+            f_qtable.writelines('0.0,0.0,0.0,0.0,0.0,0.0' + '\n')
+        return f_qtable
 
 
 # salva Qtable atual em um arquivo
 # para posteriormente continuar o treinamento "de onde parou"
 def save_qtable():
-    ar_qtable = open('qtable.txt', 'w')
-    
+    arq_qtable = open('qtable.txt', 'w')
+    close(arq_qtable)
 
 
 # le QTABLE de arquivo e retorna matriz OBSERVATION e matriz ACTION
 def read_qtable():
-    arq_qtable = open('qtable.txt')
+    f_qtable = open('qtable.txt', 'rb')
+    qtable = np.zeros((1,6))
     
-    #splita o arquivo, pegando todos os valores e jogando na matriz
-    #depois tem que tratar os dados, observation action
-    qtable = np.array([d.split(',') for d in arq_qtable.readlines()], dtype=float) 
+    for linha in f_qtable.readlines():
+        if linha.
+        linha = linha.replace('\n','') # tira \n do final
+        sp_linha = np.array([linha.split(',')], dtype=float) # splita linha 
+        qtable = np.insert(qtable, qtable.shape[0], sp_linha, axis=0) #insere linha do arquivo na tabela
+        print(len(qtable))
+
+    #print(qtable.shape)
+
     
-    observation = qtable[:,:4]
-    action = qtable[:,4:]
-    print action
+   
+f_qtable = init_qtable()
 
-
-
-arq_qtable = init_qtable()
 
 read_qtable()
-
-
-
 
 
 
@@ -156,7 +138,7 @@ while random_episodes < 100:
 #
         action = env.action_space.sample()
         observation, reward, done, info = env.step(action)
-        print(observation)
+        print type(observation)
         if done:
 #
 # Aqui ponha o seu codigo para atualizar os valores dos estados apos uma execucao
@@ -165,4 +147,5 @@ while random_episodes < 100:
             break
 #
 #   Aqui ponha o seu codigo para salvar os valores dos estados calculados
+
 """
