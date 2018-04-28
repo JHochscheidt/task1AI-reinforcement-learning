@@ -1,129 +1,117 @@
-# -*- coding:utf-8 -*-
-#!/usr/local/bin/python
-
+# -*- coding: utf-8 -*- 
 import numpy as np
 import pickle as pickle
 #import tensorflow as tf
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import math
 import gym
-
+import pandas
+import json
 env = gym.make('CartPole-v0')
-#env.reset()
-
+env.reset()
 random_episodes = 0
 reward_sum = 0
+#
+# Aqui ponha o seu codigo para ler os valores dos estados, se houver
 
-""" OBSERVATION """
-POS_CART = 2.4
-VEL_CART = 2.5
-ANG_PEND = 2  # valor em radianos
-VEL_PEND = 2.5
+#Definicao do dicionario
+qtable = {}
 
-TAM_INTERVALO_OBJS = 10
-TAM_INTERVALO_VEL = 10
+#Definição do Domínio das variáveis
 
-# shape de 0 contem o array observation q possui todas as variaveis do problema
-NUM_VAR = env.observation_space.shape[0]
+interval_car = 2.4
+interval_vel_car = 5
+interval_angle = 42
+interval_vel_angle = 5
 
-
-qtable = { }
-
-
-# print(box)
-""" ACTIONS """
-actions = range(env.action_space.n)
-""" FIM ACTIONS """
+domain_car = 10
+domain_vel_car = 10
+domain_angle = 10
+domain_vel_angle = 10
 
 
-""" REWARD """
-# Recompensa é 1 para cada passo dado, incluindo o passo de terminação
-# """ FIM REWARD """
-REWARD = 1
+car_positions = pandas.cut([-interval_car, interval_car], bins = domain_car, retbins=True)[1][1:-1]
+vels_car = pandas.cut([-interval_vel_car, interval_vel_car], bins = domain_vel_car, retbins=True)[1][1:-1]
+angle_positions = pandas.cut([-interval_angle, interval_angle], bins = domain_angle, retbins=True)[1][1:-1]
+vels_angle = pandas.cut([-interval_vel_angle, interval_vel_angle], bins = domain_vel_angle, retbins=True)[1][1:-1]
+# print 'car' , car_positions
+# print 'vel_c' , vels_car
+# print 'angle' , angle_positions
+# print 'vel_ang' , vels_angle
 
-""" ESTADO INICIAL """
+# só cria o dicionario padrao
+def create_qtable():
+    qtable = {}
+    for car in car_positions:
+        for vel_car in vels_car:
+            for angle in angle_positions:
+                for vel_angle in vels_angle:                    
+                    car = np.around(car, 2)
+                    vel_car = np.around(vel_car, 5) # discretiza(vel_car, vels_car)
+                    angle =  np.around(angle, 2) # discretiza(angle, angle_positions)
+                    vel_angle = np.around(vel_angle, 5) #discretiza(vel_angle, vels_angle)
 
-# Todas as observations sao atribuidas a um valor aleatorio uniforme entre +- 0.05
+                    # gera valor rand entre 0.0 e 1.0
+                    val_left = np.around (np.random.random_sample() , 5)
+                    val_right = np.around (np.random.random_sample(), 5)
+                    state = '{' + str(car) + ',' + str(vel_car) + ',' + str(angle) + ',' + str(vel_angle) + '}'
+                    qtable[state] = (val_left, val_right)
+    return qtable
 
-""" FIM ESTADO INICIAL """
+# salva o dicionario (qtable) no .txt
+def save_qtable(qtable):
+    with open('qtable.txt', 'w') as f:
+        json.dump(qtable, f)
 
-""" TERMINO DE UM EPISODIO """
-
-# Episodio termina
-#  se --> angulo do pendulo é maior que +-12º #um exemplo citou que o angulo seria 15º?????
-# 	--> posicao do carrinho é maior que +- 2.4 ( o centro do carrinho atinge a borda da janela de exibicao
-# 	--> duracao do episodio for maior que 200
-
-""" FIM TERMINO DE UM EPISODIO """
-
-""" RESOLUCAO DO PROBLEMA """
-
-# Problema é resolvido quando a recompensa média é maior ou igual a 195.0 em 100 tentativas consecutivas
-
-""" FIM RESOLUCAO DO PROBLEMA """
-
-# state = np.zeros(4)
-# for i in range(4):
-#         state[i] = np.digitize(observation[i],box[i])
-# print(state)
-
-
-# inicia Qtable com valores todos zerados.
-# funcao é chamada apenas na primeira vez que rodar o problema
-def init_qtable():
-    try:
-        f_qtable = open('qtable.txt', 'r') #print 'tentou abrir arq'
-        return f_qtable
-    except:
-        f_qtable = open('qtable.txt', 'w') #print 'arq nao existe. vai cria-lo'
-        for i in range(10**4):
-            f_qtable.writelines('0.0,0.0,0.0,0.0,0.0,0.0' + '\n')
-        return f_qtable
+# carrega o dicionario (qtable) do .txt
+def load_qtable():
+    with open('qtable.txt') as f:
+        return json.load(f)
 
 
-# salva Qtable atual em um arquivo
-# para posteriormente continuar o treinamento "de onde parou"
-def save_qtable():
-    arq_qtable = open('qtable.txt', 'w')
-    close(arq_qtable)
+# discretiza valor continuo para algum dos intervalos da variavel retorna posicao do intervalo em que o valor se encontra
+# valor_observation é o valor da variavel (car, vel_car, angle, vel_angle) que veio do observation
+# intervalo_discretizado é o intervalo discreto definido por nos para cada variavel
+def discretiza(valor_observation, intervalo_discretizado):
+    return np.digitize(valor_observation, intervalo_discretizado)
+
+# transforma a "contatenacao" dos valores do observation em um estado valido no dicionario (qtable)
+def construi_estado(observation):
+    car = discretiza(observation[0], car_positions)
+    vel_car = discretiza(observation[1], vels_car)
+    angle = discretiza(observation[2], angle_positions)
+    vel_angle = discretiza(observation[3], vels_angle)
 
 
-# le QTABLE de arquivo e retorna matriz OBSERVATION e matriz ACTION
-def read_qtable():
-    f_qtable = open('qtable.txt', 'rb')
-    qtable = np.zeros((1,6))
-    
-    for linha in f_qtable.readlines():
-        if linha.
-        linha = linha.replace('\n','') # tira \n do final
-        sp_linha = np.array([linha.split(',')], dtype=float) # splita linha 
-        qtable = np.insert(qtable, qtable.shape[0], sp_linha, axis=0) #insere linha do arquivo na tabela
-        print(len(qtable))
+    car = car_positions[car] 
+    vel_car = vels_car[vel_car]
+    angle = angle_positions[angle]
+    vel_angle = vels_angle[vel_angle]
 
-    #print(qtable.shape)
-
-    
-   
-f_qtable = init_qtable()
-
-
-read_qtable()
+    state = '{' + str( np.around(car, 2)) + ',' + str(np.around(vel_car, 5)) + ',' + str(np.around(angle,2)) + ',' + str(np.around(vel_angle, 5)) + '}' 
+    print 'state',  state
 
 
 
+qtable = create_qtable()
 
-#if __name__ == "__main__":
-    
-    
-   # arq_qtable = init_qtable() # inicia a tabela em um arquivo
+#print qtable
+
+save_qtable(qtable)
+
+#qtable = load_qtable()
+#print qtable
 
 
-    #observation, action = read_qtable() #le a tabela zerada do arquivo
+observation = env.reset()
+
+print 'obs' ,observation
+
+construi_estado(observation)
+
 
 
 """
-#
-# Aqui ponha o seu codigo para ler os valores dos estados, se houver
 #
 while random_episodes < 100:
     observation = env.reset()
@@ -138,14 +126,13 @@ while random_episodes < 100:
 #
         action = env.action_space.sample()
         observation, reward, done, info = env.step(action)
-        print type(observation)
         if done:
 #
 # Aqui ponha o seu codigo para atualizar os valores dos estados apos uma execucao
 #
             print("Episode finished after {} timesteps".format(t+1))
             break
+
 #
 #   Aqui ponha o seu codigo para salvar os valores dos estados calculados
-
 """
