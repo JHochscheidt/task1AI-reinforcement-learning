@@ -8,19 +8,20 @@ import math
 import gym
 import pandas
 import json
+import sys
 
 env = gym.make('CartPole-v0')
 actions = range(env.action_space.n) # retorna quantidade de ações
 number_episodes = 10000
 reward_sum = 0
 number_steps = 200
-number_training = 5
+number_training = 2
 
 #Definicao do dicionario
 qtable = {}
-epsilon = 0.1
+epsilon = 0.2
 gamma = 0.9
-alpha = 0.1
+alpha = 0.7
 
 #Definição do Domínio das variáveis
 interval_car = 2.5
@@ -56,19 +57,25 @@ def create_qtable():
     return qtable
 
 # salva o dicionario (qtable) no .txt
-def save_qtable(qtable):
-    with open('qtable.txt', 'w') as f:
-        json.dump(qtable, f)
+def save_qtable(qtable, name_file):
+    #name_file = input("Salvar arquivo como... (file name)\n")
+    #name_file = name_file
+
+    # = open(name_file, 'w')
+    
+    with open(name_file, 'w') as f:
+        json.dump(qtable, f) 
 
 # carrega o dicionario (qtable) do .txt
-def load_qtable():
+def load_qtable(name_file):
+    
     try:
-        with open('qtable.txt') as f:
+        with open(name_file) as f:
             return json.load(f)
     except:
         qtable = create_qtable()
-        save_qtable(qtable)
-        with open('qtable.txt') as f:
+        save_qtable(qtable, name_file)
+        with open(name_file) as f:
            return json.load(f)
 
 # discretiza valor continuo para algum dos intervalos da variavel retorna posicao do intervalo em que o valor se encontra
@@ -119,9 +126,16 @@ if __name__ == "__main__":
     #chama caso ainda nao exista o arquivo com a qtable
     #qtable = create_qtable()  #save_qtable(qtable)
     """
+    
+    
+    name_file = sys.argv[1]
+    print name_file
+
+    
     qtable = {}
-    qtable = load_qtable()
+    qtable = load_qtable(name_file)
     for training in range(number_training):
+        print training
         env.reset()
         for episode in range(number_episodes):
             observation = env.reset()
@@ -157,6 +171,6 @@ if __name__ == "__main__":
         print("Best 100 score: {:0.2f}".format(reduce(lambda x, y: x + y, l[-100:]) / len(l[-100:])))
         print("Best score: {:0.2f}".format(max(l)))
         print("Desvio padrao: {:0.2f}".format(np.std(l)))
-    save_qtable(qtable)
+    save_qtable(qtable,name_file)
        
 
