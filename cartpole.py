@@ -11,29 +11,27 @@ import json
 
 env = gym.make('CartPole-v0')
 actions = range(env.action_space.n) # retorna quantidade de ações
-number_episodes = 5000
+number_episodes = 10000
 reward_sum = 0
 number_steps = 200
-number_training = 50
-#
-# Aqui ponha o seu codigo para ler os valores dos estados, se houver
+number_training = 5
 
 #Definicao do dicionario
 qtable = {}
 epsilon = 0.1
-gamma = 1
+gamma = 0.9
 alpha = 0.1
-#Definição do Domínio das variáveis
 
+#Definição do Domínio das variáveis
 interval_car = 2.5
 interval_vel_car = 5
-interval_angle = 3
+interval_angle = 0.3
 interval_vel_angle = 5
 
-domain_car = 10
+domain_car = 20
 domain_vel_car = 20
-domain_angle = 100
-domain_vel_angle = 50
+domain_angle = 20
+domain_vel_angle = 20
 
 last_time_steps = np.ndarray(0)
 
@@ -41,21 +39,6 @@ car_positions = pandas.cut([-interval_car, interval_car], bins = domain_car, ret
 vels_car = pandas.cut([-interval_vel_car, interval_vel_car], bins = domain_vel_car, retbins=True)[1][1:]
 angle_positions = pandas.cut([-interval_angle, interval_angle], bins = domain_angle, retbins=True)[1][1:]
 vels_angle = pandas.cut([-interval_vel_angle, interval_vel_angle], bins = domain_vel_angle, retbins=True)[1][1:]
-# print 'car' , car_positions
-# print 'vel_c' , vels_car
-# print 'angle' , angle_positions
-# print 'vel_ang' , vels_angle
-
-
-def print_qtable(qtable):
-    count = 0
-    for state in qtable:
-        if qtable[state][0] != 1.0 or qtable[state][1] != 1.0:
-            count = count + 1
-            #print state , ' = ' , qtable[state], '\n' 
-    
-    print count
-
 
 # só cria o dicionario padrao
 def create_qtable():
@@ -68,10 +51,6 @@ def create_qtable():
                     vel_car = np.around(vel_car, 5) # discretiza(vel_car, vels_car)
                     angle =  np.around(angle, 5) # discretiza(angle, angle_positions)
                     vel_angle = np.around(vel_angle, 5) #discretiza(vel_angle, vels_angle)
-
-                    # gera valor rand entre 0.0 e 1.0
-                    #val_left = np.around (np.random.random_sample() , 5)
-                    #val_right = np.around (np.random.random_sample(), 5)
                     state = '{' + str(car) + ',' + str(vel_car) + ',' + str(angle) + ',' + str(vel_angle) + '}'
                     qtable[state] = (1.0 ,1.0)
     return qtable
@@ -91,8 +70,6 @@ def load_qtable():
         save_qtable(qtable)
         with open('qtable.txt') as f:
            return json.load(f)
-        
-
 
 # discretiza valor continuo para algum dos intervalos da variavel retorna posicao do intervalo em que o valor se encontra
 # valor_observation é o valor da variavel (car, vel_car, angle, vel_angle) que veio do observation
@@ -106,42 +83,24 @@ def construi_estado(observation):
     vel_car = discretiza(observation[1], vels_car)
     angle = discretiza(observation[2], angle_positions)
     vel_angle = discretiza(observation[3], vels_angle)
-
-
     car = car_positions[car] 
     vel_car = vels_car[vel_car]
     angle = angle_positions[angle]
     vel_angle = vels_angle[vel_angle]
-
     state = '{' + str( np.around(car, 5)) + ',' + str(np.around(vel_car, 5)) + ',' + str(np.around(angle,5)) + ',' + str(np.around(vel_angle, 5)) + '}' 
     return state
 
-def get_state_qtable(qtable, key):
-    return qtable.get(key, default = None)
-
-
-
+# escolha uma acao dado o estado
 def escolhe_action(state):
     q = qtable[state]
     maxQ = max(q)
-
-
-    if np.random.random_sample() < epsilon:
-        minQ = min(q)
-        mag = max(abs(minQ), abs(maxQ))
-        q = [q[i] + np.random.random_sample() * mag - .5 * mag for i in range(len(actions))]
-        maxQ = max(q)
-
-
     if q.count(maxQ) > 1:
         best = [i for i in range(len(actions)) if q[i] == maxQ]
         i = np.random.choice(best)
     else:
         i = q.index(maxQ)
-
     action = actions[i]
     return action, maxQ
-
 
 # atualiza a qtable
 def learnQ(currrent_state, action, reward, value):
@@ -155,100 +114,49 @@ def learning(current_state, next_state, action, reward):
 
 if __name__ == "__main__":
     
+    """
     #chama somente uma vez para criar a qtable
     #chama caso ainda nao exista o arquivo com a qtable
-
-    #qtable = create_qtable() 
-    #save_qtable(qtable)
-    #qtable = {}
+    #qtable = create_qtable()  #save_qtable(qtable)
+    """
+    qtable = {}
     qtable = load_qtable()
-    print_qtable(qtable)
     for training in range(number_training):
-        print 'training' , training
-        #print qtable
-        #print_qtable(qtable)
         env.reset()
-
         for episode in range(number_episodes):
-            #print 'episode' , episode
             observation = env.reset()
 
             #discretizar observation de modo a criar um estado valido
-            # esse é o proximo estado
             current_state = construi_estado(observation)
-
-            
-            # pega os valores para as duas acoes (left, right)
-            #val_action_left, val_action_right = qtable[state]
-            
-            max_val = max(qtable[current_state])
-
 
             for step in range(number_steps):
                 #env.render()
-                #print(observation)
-        
                 #escolhe a melhor acao para o estado atual
                 action, value_action  = escolhe_action(current_state)
-
                 observation, reward, done, info = env.step(action)
-
-
                 next_state = construi_estado(observation)
-
 
                 #executa esta acao 
                 # ????para saber qual é a melhor acao para o estaod atual?????
-
-
-
                 #depois disso, pega o novo observation da acao tomada acima para saber qual é o proximo estado
-
-
-
-
-        #
-        # Aqui ponho o seu codigo para salvar a observacao, estado
-        #
-        #
-        # Aqui ponha o seu codigo para escolher a melhor acao dependendo do estado atual
-
-
-                #action = env.action_space.sample()
-                
                 #aqui esta em S
-
                 #observation, reward, done, info = env.step(action)
-
                 # aqui esta em S'
-
-
-
                 if not (done):
                     # chama para aprender novamente, dado o estado atual e o proximo estado
                     # atualiza estado atual = proximo estado
                     learning(current_state, next_state, action, reward)
                     state = next_state
-                
-
                 else:
                     last_time_steps = np.append(last_time_steps, [int(step + 1)])
                     #print("Episode finished after {} timesteps".format(step+1))
                     break
-                
-
-
         l = last_time_steps.tolist()
         l.sort()
         print("Overall score: {:0.2f}".format(last_time_steps.mean()))
         print("Best 100 score: {:0.2f}".format(reduce(lambda x, y: x + y, l[-100:]) / len(l[-100:])))
+        print("Best score: {:0.2f}".format(max(l)))
+        print("Desvio padrao: {:0.2f}".format(np.std(l)))
     save_qtable(qtable)
-    #print_qtable(qtable)
-        #
-        # Aqui ponha o seu codigo para atualizar os valores dos estados apos uma execucao
-        #
-                    
-
-        #
-        #   Aqui ponha o seu codigo para salvar os valores dos estados calculados
+       
 
