@@ -12,16 +12,16 @@ import sys
 
 env = gym.make('CartPole-v0')
 actions = range(env.action_space.n) # retorna quantidade de ações
-number_episodes = 10000
+number_episodes = 5000
 reward_sum = 0
 number_steps = 200
-number_training = 2
+number_training = 20
 
 #Definicao do dicionario
 qtable = {}
-epsilon = 0.2
-gamma = 0.9
-alpha = 0.7
+epsilon = 0.1
+gamma = 0.8
+alpha = 0.1
 
 #Definição do Domínio das variáveis
 interval_car = 2.5
@@ -29,10 +29,10 @@ interval_vel_car = 5
 interval_angle = 0.3
 interval_vel_angle = 5
 
-domain_car = 20
-domain_vel_car = 20
-domain_angle = 20
-domain_vel_angle = 20
+domain_car = 5
+domain_vel_car = 5
+domain_angle = 5
+domain_vel_angle = 5
 
 last_time_steps = np.ndarray(0)
 
@@ -112,7 +112,7 @@ def escolhe_action(state):
 # atualiza a qtable
 def learnQ(currrent_state, action, reward, value):
     oldvalue = qtable[current_state][action]
-    qtable[current_state][action] = oldvalue + alpha * ( value - oldvalue)
+    qtable[current_state][action] = np.around(oldvalue + alpha * ( value - oldvalue), 5)
     
 # esta aprendendo a mlk
 def learning(current_state, next_state, action, reward):

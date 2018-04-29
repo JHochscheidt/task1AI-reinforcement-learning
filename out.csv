@@ -1,0 +1,12 @@
+[33mWARN: gym.spaces.Box autodetected dtype as <type 'numpy.float32'>. Please provide explicit dtype.[0m
+qtable5.csv
+0
+Overall score: 22.21
+Best 100 score: 70.14
+Best score: 119.00
+Desvio padrao: 12.12
+1
+Overall score: 22.20
+Best 100 score: 76.42
+Best score: 119.00
+Desvio padrao: 11.96
