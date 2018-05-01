@@ -1,8 +1,8 @@
 [33mWARN: gym.spaces.Box autodetected dtype as <type 'numpy.float32'>. Please provide explicit dtype.[0m
 number_episodes 1000
-alpha 0.8
-gamma 0.2
+alpha 0.3
+gamma 0.7
 
-Average Overall score: 14.59
-Best score: 28.00
-Standard Deviation: 4.95
+Average Overall score: 200.00
+Best score: 200.00
+Standard Deviation: 0.00

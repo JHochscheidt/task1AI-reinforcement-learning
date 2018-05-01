@@ -127,8 +127,8 @@ if __name__ == "__main__":
     reward_steps = np.ndarray(0)        #array que guarda a recompensa total de cada episodio
     episodes = np.ndarray(0)            #array utilizado apenas para montar os graficos
 
-    gamma = 0.2     # fator de desconto[0,1]. Define se recompensas futuras valem  valem menos do que recompensas imediatas.
-    alpha = 0.8     # taxa de aprendizado[0,1]. --> 0 significa que os valores Q nunca são atualizados, portanto, nada é aprendido. 
+    gamma = 0.7     # fator de desconto[0,1]. Define se recompensas futuras valem  valem menos do que recompensas imediatas.
+    alpha = 0.3     # taxa de aprendizado[0,1]. --> 0 significa que os valores Q nunca são atualizados, portanto, nada é aprendido. 
                     #                           --> Definir para um valor alto como 0,9 significa que o aprendizado pode ocorrer rapidamente.
 
     """"""""""""""""""""""""""""""""
@@ -202,7 +202,7 @@ if __name__ == "__main__":
         avg_best_hd_con_score[i:i+100] = avg_best_hundred_consecutive_score
         ax1.plot(episodes[i:i+100], avg_best_hd_con_score[i:i+100], color='g', label='Avg best 100 consecutives') #plota a média entre 100 melhores os episódios
     ax1.legend(loc='upper left')
-    plt.savefig("training_1_1000_08_02.png")
+    plt.savefig("training_1_1000_03_07.png")
     plt.show()
 
 
