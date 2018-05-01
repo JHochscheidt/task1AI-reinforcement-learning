@@ -1,0 +1,17 @@
+Política dos testes:
+
+1º Será utilizado como tamanho do domínio para todas as variáveis o valor 10;
+    Serão efetuados três treinamentos com cada um dos valores para episódios[100,200,500,1000,2000]
+        Para alpha ~1 e gamma ~0
+        Para alpha ~1 e gamma ~1
+        Para alpha ~0 e gamma ~0
+        Para alpha ~0 e gamma ~1
+
+2º Será utilizado o mesmo valor(10) para todas as variáveis, exceto para a posição do carrinho, que será usado o valor 1
+    Serão efetuados três treinamentos com cada um dos valores para episódios[100,200,500,1000,2000]
+        Para alpha ~1 e gamma ~0
+        Para alpha ~1 e gamma ~1
+        Para alpha ~0 e gamma ~0
+        Para alpha ~0 e gamma ~1
+
+3º Comparar 1º e 2º passo para ver qual é melhor
