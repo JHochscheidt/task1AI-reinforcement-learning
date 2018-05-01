@@ -13,7 +13,7 @@ interval_vel_car = 6
 interval_angle = 13
 interval_vel_angle = 6 
 #Definição do Domínio das variáveis
-domain_car = 10
+domain_car = 1
 domain_vel_car = 10
 domain_angle = 10
 domain_vel_angle = 10
@@ -117,7 +117,7 @@ if __name__ == "__main__":
     """"""""""""""""""""""""""""""""
     """  PARAMETROS TREINAMENTO  """
     """"""""""""""""""""""""""""""""
-    number_episodes = 200   #numero de episodios
+    number_episodes = 1000   #numero de episodios
     reward_sum = 0          #somatorio das recompensas
     number_steps = 200      #numero de passos                                           #este valor nao pode ser alterado
      
@@ -127,8 +127,8 @@ if __name__ == "__main__":
     reward_steps = np.ndarray(0)        #array que guarda a recompensa total de cada episodio
     episodes = np.ndarray(0)            #array utilizado apenas para montar os graficos
 
-    gamma = 0.9     # fator de desconto[0,1]. Define se recompensas futuras valem  valem menos do que recompensas imediatas.
-    alpha = 0.5     # taxa de aprendizado[0,1]. --> 0 significa que os valores Q nunca são atualizados, portanto, nada é aprendido. 
+    gamma = 0.2     # fator de desconto[0,1]. Define se recompensas futuras valem  valem menos do que recompensas imediatas.
+    alpha = 0.8     # taxa de aprendizado[0,1]. --> 0 significa que os valores Q nunca são atualizados, portanto, nada é aprendido. 
                     #                           --> Definir para um valor alto como 0,9 significa que o aprendizado pode ocorrer rapidamente.
 
     """"""""""""""""""""""""""""""""
@@ -155,7 +155,9 @@ if __name__ == "__main__":
             if done:
                 if step != (number_steps-1):
                     learning(current_state, next_state, action, -10) #só atualiza o estado que fez com que terminasse o episodio com uma recompensa negativa
-                    reward_sum += -10 
+                    reward_sum += -10
+                else: 
+                    reward_sum+=reward 
                 reward_steps = np.append(reward_steps,reward_sum)      #adiciona recompensa ao vetor de recompensas
                 last_time_steps = np.append(last_time_steps, step+1)#adiciona valor do ultimo passo do episodio ao vetor
                 #print("Episode finished after {} timesteps".format(step+1))
@@ -179,13 +181,13 @@ if __name__ == "__main__":
     avg_rw_all_ep[:] = avg_rw_all_episodes
 
     solved, i = average_hundred_consecutive_score(last_time_steps)
-    if solved:
-        print '[' + str(i) + '|' + str(i+100) + ']\n' + str(last_time_steps[i:i+100]) + '\n'
+    #if solved:
+        #print '[' + str(i) + '|' + str(i+100) + ']\n' + str(last_time_steps[i:i+100]) + '\n'
 
     """ 
     GRAFICOS 
     """
-    fig = plt.figure() #figura em que serão desenhados os gráficos
+    fig = plt.figure(figsize=(15,10)) #figura em que serão desenhados os gráficos
     rect = fig.patch
     ax1 = fig.add_subplot(1,1,1) #figura terá apenas 1 gráfico
     ax1.set_title('Resultado treinamento')  #Título do gráfico
@@ -200,21 +202,18 @@ if __name__ == "__main__":
         avg_best_hd_con_score[i:i+100] = avg_best_hundred_consecutive_score
         ax1.plot(episodes[i:i+100], avg_best_hd_con_score[i:i+100], color='g', label='Avg best 100 consecutives') #plota a média entre 100 melhores os episódios
     ax1.legend(loc='upper left')
-
+    plt.savefig("training_1_1000_08_02.png")
     plt.show()
 
-    #last_time_steps.sort()
 
+    
+
+    print 'number_episodes', number_episodes
+    print 'alpha', alpha
+    print 'gamma', gamma
     print("\nAverage Overall score: {:0.2f}".format(avg_last_time_steps))
     print("Best score: {:0.2f}".format(max(last_time_steps)))
     print("Standard Deviation: {:0.2f}".format(np.std(last_time_steps)))
-    
-
-
-    
-        
-
-    
-    
+       
     save_qtable(qtable,name_file)
 

@@ -1,0 +1,8 @@
+[33mWARN: gym.spaces.Box autodetected dtype as <type 'numpy.float32'>. Please provide explicit dtype.[0m
+number_episodes 100
+alpha 0.4
+gamma 0.6
+
+Average Overall score: 174.70
+Best score: 200.00
+Standard Deviation: 55.80
