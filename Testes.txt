@@ -14,4 +14,5 @@ Política dos testes:
         Para alpha ~0 e gamma ~0
         Para alpha ~0 e gamma ~1
 
-3º Comparar 1º e 2º passo para ver qual é melhor
+3º Comparar 1º e 2º passo para ver qual é melhor:
+    Pegar os melhores valores para alpha e gamma, número de episódios... e treinar (executar o código) por 10 vezes, afim de tentar alcançar o objetivo
