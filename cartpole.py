@@ -1,23 +1,24 @@
 # -*- coding: utf-8 -*- 
 #!/usr/bin/python2.7
 import numpy as np
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import gym
 import pandas
 import json
 import sys
 
-#Definição do Domínio das variáveis
+#Definição do intervalo das variáveis
 interval_car = 2.5
 interval_vel_car = 6
 interval_angle = 13
 interval_vel_angle = 6 
-
+#Definição do Domínio das variáveis
 domain_car = 1
 domain_vel_car = 10
 domain_angle = 10
 domain_vel_angle = 10
 
+#Gerando valores para os índices dos intervalos
 car_positions = pandas.cut([-interval_car, interval_car], bins = domain_car, retbins=True)[1][1:]
 vels_car = pandas.cut([-interval_vel_car, interval_vel_car], bins = domain_vel_car, retbins=True)[1][1:]
 angle_positions = pandas.cut([-interval_angle, interval_angle], bins = domain_angle, retbins=True)[1][1:]
@@ -48,9 +49,6 @@ def save_qtable(qtable, name_file):
 
 # carrega o dicionario (qtable) do arquivo
 def load_qtable(name_file):   
-    #tenta abrir o escrito pra fazer a leitura
-    #se nao conseguir (é pq arquivo nao existe)
-    #ai gera a Qtable, salva ela e depois carrega
     try:
         with open(name_file, 'r') as f:
             return json.load(f)
@@ -64,20 +62,20 @@ def load_qtable(name_file):
 # retorna posicao do intervalo em que o valor se encaixa
 # valor_observation é o valor da variavel (car, vel_car, angle, vel_angle) que veio do observation
 # intervalo_discretizado é o intervalo discreto definido por nos para cada variavel
-def discretiza(valor_observation, intervalo_discretizado):
+def discretize(valor_observation, intervalo_discretizado):
     return np.digitize(valor_observation, intervalo_discretizado)
 
 # transforma a "concatenacao" dos valores do observation em um estado valido no dicionario (qtable)
-def construi_estado(observation):
-    car = np.around(observation[0], around)
-    vel_car = np.around(observation[1], around)
-    angle = np.around(observation[2], around)
-    vel_angle = np.around(observation[3], around)
+def build_state(observation):
+    # car = np.around(observation[0], around)
+    # vel_car = np.around(observation[1], around)
+    # angle = np.around(observation[2], around)
+    # vel_angle = np.around(observation[3], around)
 
-    car = discretiza(car, car_positions)
-    vel_car = discretiza(vel_car, vels_car)
-    angle = discretiza(angle, angle_positions)
-    vel_angle = discretiza(vel_angle, vels_angle)
+    car = discretize(observation[0], car_positions)
+    vel_car = discretize(observation[1], vels_car)
+    angle = discretize(observation[2], angle_positions)
+    vel_angle = discretize(observation[3], vels_angle)
     
     car = car_positions[car] 
     vel_car = vels_car[vel_car]
@@ -88,7 +86,7 @@ def construi_estado(observation):
     return state
 
 # escolha uma acao dado o estado
-def escolhe_action(state):
+def action_choice(state):
     q = qtable[state]
     maxQ = max(q)
     #tenta "probabilisticamente" escolher um estado aleatorio
@@ -97,7 +95,7 @@ def escolhe_action(state):
         mag = max(abs(minQ), abs(maxQ))
         # add random values to all the actions, recalculate maxQ
         q = [q[i] + np.random.random_sample() * mag - .5 * mag for i in range(len(actions))] 
-        maxQ = max(q)
+        maxQ = min(q)
     if q.count(maxQ) > 1:
         best = [i for i in range(len(actions)) if q[i] == maxQ]
         i = np.random.choice(best)
@@ -108,15 +106,9 @@ def escolhe_action(state):
 
 # atualiza a qtable
 def learning(current_state, next_state, action, reward):
-    
     qtable[current_state][action] = \
         np.around(qtable[current_state][action] + \
-        alpha *(reward + gamma*(max(qtable[next_state])) - qtable[current_state][action]), 3)
-
-#printa a qtable diferente
-def print_qtable(qtable):
-    for key in qtable:
-        print 'qtable[' + key + ']', qtable[key] , '\n'
+        alpha *(reward + gamma*(max(qtable[next_state])) - qtable[current_state][action]), around)
 
 #main
 if __name__ == "__main__":
@@ -125,77 +117,97 @@ if __name__ == "__main__":
     except:
         print 'Passe como parametro o nome do arquivo que salva a Qtable'
         exit(0)
-
     env = gym.make('CartPole-v0')
     actions = range(env.action_space.n) # retorna quantidade de ações
 
-    number_episodes = 300
-    reward_sum = 0
-    number_steps = 200
+    """"""""""""""""""""""""""""""""
+    """  PARAMETROS TREINAMENTO  """
+    """"""""""""""""""""""""""""""""
+    number_episodes = 100   #numero de episodios
+    reward_sum = 0          #somatorio das recompensas
+    number_steps = 200      #numero de passos                                           #este valor nao pode ser alterado
      
-    goal_average_steps = 195
-    last_time_steps = np.ndarray(0)
-    last_rewards = np.ndarray(0)
+    average_reward = 195    #media das recompensas ao final de todos os episodios       #este numero nao pode ser alterado
+    #last_time_steps = np.ndarray(0)    #array que guarda quantos passos ocorreram em cada episodio
+    last_time_steps = np.ndarray(0)     #array que guarda quantos passos ocorreram em cada episodio. 
+    reward_steps = np.ndarray(0)        #array que guarda a recompensa total de cada episodio
+    episodes = np.ndarray(0)            #array utilizado apenas para montar os graficos
+    epsilon = 0.2   # valor utilizado para escolher valor probabilisticamente
+    gamma = 0.90     # fator de desconto[0,1]. Define se recompensas futuras valem  valem menos do que recompensas imediatas.
+    alpha = 0.6     # taxa de aprendizado[0,1]. --> 0 significa que os valores Q nunca são atualizados, portanto, nada é aprendido. 
+                    #                           --> Definir para um valor alto como 0,9 significa que o aprendizado pode ocorrer rapidamente.
 
-
-    epsilon = 0.1
-    gamma = 0.5 # gama : é o fator de desconto, também definido entre 0 e 1. 
-            # Isso modela o fato de que recompensas futuras valem menos do que recompensas imediatas.
-
-    alpha = 0.1 # alpha : é a taxa de aprendizado, definida geralmente entre 0 e 1. 
-            # Configurá-la como 0 significa que os valores Q nunca são atualizados, portanto, nada é aprendido. 
-            # Definir alfa para um valor alto como 0,9 significa que o aprendizado pode ocorrer rapidamente.
-
-
+    """"""""""""""""""""""""""""""""
+    """FIM PARAMETROS TREINAMENTO"""
+    """"""""""""""""""""""""""""""""
     #Definicao do dicionario
     qtable = {}
     #carrega qtable do arquivo ou cria a qtable, salva e depois carrega
     qtable = load_qtable(name_file)
 
-    
     for episode in range(number_episodes):
+        print 'episode', episode
+        episodes = np.append(episodes, episode)
         observation = env.reset()
         reward_sum = 0
         for step in range(number_steps):
-            env.render()
-            
-            #discretizar observation de modo a criar um estado valido
-            current_state = construi_estado(observation)
-
-            #escolhe a melhor acao para o estado atual
-            action, value_action  = escolhe_action(current_state)
+            #env.render()
+            #construi estado, escolhe uma ação e faz essa ação afim de verificar observation para depois pegar o proximo estado
+            current_state = build_state(observation)
+            action, value_action  = action_choice(current_state)
             observation, reward, done, info = env.step(action)
-            next_state = construi_estado(observation)
+            next_state = build_state(observation)
+
             if done:
-                
-                learning(current_state, next_state, action, -10)
-                reward_sum += -10
-                last_time_steps = np.append(last_time_steps, [int(step + 1)])
-                last_rewards = np.append(last_rewards, reward_sum)
-                #print("Episode finished after {} timesteps".format(step+1))
+                if step != 199:
+                    learning(current_state, next_state, action, -10) #só atualiza o estado que fez com que terminasse o episodio com uma recompensa negativa
+                    reward_sum += -10 
+                reward_steps = np.append(reward_steps,reward_sum)      #adiciona recompensa ao vetor de recompensas
+                last_time_steps = np.append(last_time_steps, step+1)#adiciona valor do ultimo passo do episodio ao vetor
+                print("Episode finished after {} timesteps".format(step+1))
                 break
             else:
-                # chama para aprender novamente, dado o estado atual e o proximo estado
-                # atualiza estado atual = proximo estado
                 reward_sum += reward
-                learning(current_state, next_state, action, reward)
-                state = next_state
-        
-        if episode > 100:
-            media_last_100 = last_rewards[-100:]
-            media_last_100 = np.mean(media_last_100)
-            print("Over last 100 score <mean>: {:0.2f}\n".format(media_last_100))
-            if media_last_100 >= goal_average_steps:
-                print 'Problema resolvido'     
-                exit(0)
-            
-            
-    l = last_time_steps.tolist()
-    l.sort()
+                learning(current_state, next_state, action, reward) # chama para aprender novamente, dado o estado atual e o proximo estado
+                state = next_state                                  # atualiza estado atual = proximo estado
+                reward_steps = np.append(reward_steps,reward_sum)          #adiciona recompensa ao vetor de recompensas
+        #fim laço step
+    #fim laço episode          
 
-    print("Overall score: {:0.2f}".format(last_time_steps.mean()))
-    print("Best 100 score: {:0.2f}".format(reduce(lambda x, y: x + y, l[-100:]) / len(l[-100:])))
-    print("Best score: {:0.2f}".format(max(l)))
-    print("Desvio padrao: {:0.2f}".format(np.std(l)))
+    """ 
+    GRAFICOS 
+    """
+    
+    avg_rw_all_episodes = reward_steps.mean()  #media de recompensa entre todos os episodios
+    avg_last_time_steps = last_time_steps.mean() #media de passos entre todos os episodios
+    std_dev_last_time_steps = np.std(last_time_steps) #desvio padrao
+    
+    avg_all_steps = np.ndarray(number_episodes)
+    avg_all_steps[:] = avg_last_time_steps
+
+    avg_rw_all_ep = np.ndarray(number_episodes)
+    avg_rw_all_ep[:] = avg_rw_all_episodes
+
+    fig = plt.figure() #figura em que serão desenhados os gráficos
+    rect = fig.patch
+    ax1 = fig.add_subplot(1,1,1) #figura terá apenas 1 gráfico
+    ax1.set_title('Resultado treinamento')  #Título do gráfico
+    ax1.set_xlabel('episode')               #Eixo X
+    ax1.set_ylabel('step')                  #Eixo y
+    
+    
+
+    ax1.plot(episodes, last_time_steps , color='r', label='Qt steps') #plota o ultimo passo de cada episodio
+    ax1.plot(episodes, avg_rw_all_ep, color='g', label='Avg reward all') #plota a média de recompensa entre todos os episódios
+    ax1.plot(episodes, avg_all_steps, color='b', label='Avg all episodes') #plota a média entre todos os episódios
+    ax1.legend(loc='upper left')
+
+    plt.show()
+
+
+    print("\nAverage Overall score: {:0.2f}".format(avg_last_time_steps))
+    print("Average Reward Overall score: {:0.2f}".format(avg_rw_all_episodes))
+    print("Best score: {:0.2f}".format(max(last_time_steps)))
+    print("Standard Deviation: {:0.2f}".format(np.std(last_time_steps)))
     save_qtable(qtable,name_file)
 
