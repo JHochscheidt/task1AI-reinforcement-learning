@@ -201,7 +201,9 @@ if __name__ == "__main__":
         avg_best_hd_con_score[i:i+100] = avg_best_hundred_consecutive_score
         ax1.plot(episodes[i:i+100], avg_best_hd_con_score[i:i+100], color='g', label='Avg best 100 consecutives') #plota a média entre 100 melhores os episódios
     ax1.legend(loc='upper left')
+    
     plt.show()
+    plt.savefig("resultado_final3.png")
 
     print 'number_episodes', number_episodes
     print 'alpha', alpha
