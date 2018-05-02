@@ -117,18 +117,17 @@ if __name__ == "__main__":
     """"""""""""""""""""""""""""""""
     """  PARAMETROS TREINAMENTO  """
     """"""""""""""""""""""""""""""""
-    number_episodes = 1000   #numero de episodios
+    number_episodes = 100   #numero de episodios
     reward_sum = 0          #somatorio das recompensas
     number_steps = 200      #numero de passos                                           #este valor nao pode ser alterado
      
     average_reward = 195                #media das recompensas ao final de todos os episodios       #este numero nao pode ser alterado
-    #last_time_steps = np.ndarray(0)    #array que guarda quantos passos ocorreram em cada episodio
     last_time_steps = np.ndarray(0)     #array que guarda quantos passos ocorreram em cada episodio. 
     reward_steps = np.ndarray(0)        #array que guarda a recompensa total de cada episodio
     episodes = np.ndarray(0)            #array utilizado apenas para montar os graficos
 
-    gamma = 0.7     # fator de desconto[0,1]. Define se recompensas futuras valem  valem menos do que recompensas imediatas.
-    alpha = 0.3     # taxa de aprendizado[0,1]. --> 0 significa que os valores Q nunca são atualizados, portanto, nada é aprendido. 
+    gamma = 0.3     # fator de desconto[0,1]. Define se recompensas futuras valem  valem menos do que recompensas imediatas.
+    alpha = 0.7     # taxa de aprendizado[0,1]. --> 0 significa que os valores Q nunca são atualizados, portanto, nada é aprendido. 
                     #                           --> Definir para um valor alto como 0,9 significa que o aprendizado pode ocorrer rapidamente.
 
     """"""""""""""""""""""""""""""""
@@ -181,13 +180,13 @@ if __name__ == "__main__":
     avg_rw_all_ep[:] = avg_rw_all_episodes
 
     solved, i = average_hundred_consecutive_score(last_time_steps)
-    #if solved:
-        #print '[' + str(i) + '|' + str(i+100) + ']\n' + str(last_time_steps[i:i+100]) + '\n'
+    if solved:
+        print '[' + str(i) + '|' + str(i+100) + ']\n' + str(last_time_steps[i:i+100]) + '\n'
 
     """ 
     GRAFICOS 
     """
-    fig = plt.figure(figsize=(15,10)) #figura em que serão desenhados os gráficos
+    fig = plt.figure() #figura em que serão desenhados os gráficos
     rect = fig.patch
     ax1 = fig.add_subplot(1,1,1) #figura terá apenas 1 gráfico
     ax1.set_title('Resultado treinamento')  #Título do gráfico
@@ -202,11 +201,7 @@ if __name__ == "__main__":
         avg_best_hd_con_score[i:i+100] = avg_best_hundred_consecutive_score
         ax1.plot(episodes[i:i+100], avg_best_hd_con_score[i:i+100], color='g', label='Avg best 100 consecutives') #plota a média entre 100 melhores os episódios
     ax1.legend(loc='upper left')
-    plt.savefig("training_1_1000_03_07.png")
     plt.show()
-
-
-    
 
     print 'number_episodes', number_episodes
     print 'alpha', alpha
@@ -216,4 +211,3 @@ if __name__ == "__main__":
     print("Standard Deviation: {:0.2f}".format(np.std(last_time_steps)))
        
     save_qtable(qtable,name_file)
-
